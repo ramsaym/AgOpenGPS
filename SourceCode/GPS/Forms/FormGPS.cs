@@ -1676,10 +1676,10 @@ namespace AgOpenGPS
             fd.workedAreaTotal = 0;
 
             //reset boundaries
-            bnd.ResetBoundaries();
+            bnd.bndArr.Clear();
 
             //reset turn lines
-            turn.ResetTurnLines();
+            turn.turnArr.Clear();
 
             //reset GUI areas
             fd.UpdateFieldBoundaryGUIAreas();

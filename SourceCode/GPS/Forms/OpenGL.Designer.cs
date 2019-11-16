@@ -588,16 +588,16 @@ namespace AgOpenGPS
             }
 
             //draw bright green on back buffer
-            if (bnd.bndArr.Count > 0)
+            if (bnd.bndArr.Count > bnd.LastBoundary && bnd.LastBoundary >= 0)
             {
                 ////draw the perimeter line so far
-                int ptCount = bnd.bndArr[0].bndLine.Count;
+                int ptCount = bnd.bndArr[bnd.LastBoundary].bndLine.Count;
                 if (ptCount > 1)
                 {
                     GL.LineWidth(2);                
                     GL.Color3(0.0f, 0.99f, 0.0f);
                     GL.Begin(PrimitiveType.LineStrip);
-                    for (int h = 0; h < ptCount; h++) GL.Vertex3(bnd.bndArr[0].bndLine[h].easting, bnd.bndArr[0].bndLine[h].northing, 0);
+                    for (int h = 0; h < ptCount; h++) GL.Vertex3(bnd.bndArr[bnd.LastBoundary].bndLine[h].easting, bnd.bndArr[bnd.LastBoundary].bndLine[h].northing, 0);
                     GL.End();
                 }
             }
@@ -1237,19 +1237,46 @@ namespace AgOpenGPS
             //min max of the boundary
             if (bnd.bndArr.Count > 0)
             {
-                int bndCnt = bnd.bndArr[0].bndLine.Count;
-                for (int i = 0; i < bndCnt; i++)
+                if (bnd.bndArr.Count > bnd.LastBoundary && bnd.LastBoundary >= 0)
                 {
-                    double x = bnd.bndArr[0].bndLine[i].easting;
-                    double y = bnd.bndArr[0].bndLine[i].northing;
-
-                    //also tally the max/min of field x and z
-                    if (minFieldX > x) minFieldX = x;
-                    if (maxFieldX < x) maxFieldX = x;
-                    if (minFieldY > y) minFieldY = y;
-                    if (maxFieldY < y) maxFieldY = y;
+                    int bndCnt = bnd.bndArr[bnd.LastBoundary].bndLine.Count;
+                    for (int i = 0; i < bndCnt; i++)
+                    {
+                        double x = bnd.bndArr[bnd.LastBoundary].bndLine[i].easting;
+                        double y = bnd.bndArr[bnd.LastBoundary].bndLine[i].northing;
+                        //also tally the max/min of field x and z
+                        if (minFieldX > x) minFieldX = x;
+                        if (maxFieldX < x) maxFieldX = x;
+                        if (minFieldY > y) minFieldY = y;
+                        if (maxFieldY < y) maxFieldY = y;
+                    }
                 }
+                else
+                {
+                    for (int i = 0; i < bnd.bndArr.Count; i++)
+                    {
+                        if (bnd.bndArr[i].isSet && bnd.bndArr[i].isOwnField)
+                        {
+                            int bndCnt = bnd.bndArr[i].bndLine.Count;
+                            for (int j = 0; j < bndCnt; j++)
+                            {
+                                double x = bnd.bndArr[i].bndLine[j].easting;
+                                double y = bnd.bndArr[i].bndLine[j].northing;
 
+                                //also tally the max/min of field x and z
+                                if (minFieldX > x) minFieldX = x;
+                                if (maxFieldX < x) maxFieldX = x;
+                                if (minFieldY > y) minFieldY = y;
+                                if (maxFieldY < y) maxFieldY = y;
+                            }
+                        }
+                    }
+                    double zoom = 500;
+                    if (minFieldX < pivotAxlePos.easting - zoom) minFieldX = pivotAxlePos.easting - zoom;
+                    if (maxFieldX > pivotAxlePos.easting + zoom) maxFieldX = pivotAxlePos.easting + zoom;
+                    if (minFieldY < pivotAxlePos.northing - zoom) minFieldY = pivotAxlePos.northing - zoom;
+                    if (maxFieldY > pivotAxlePos.northing + zoom) maxFieldY = pivotAxlePos.northing + zoom;
+                }
             }
             else
             {

@@ -2095,6 +2095,15 @@ namespace AgOpenGPS {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No.
+        /// </summary>
+        public static string gsNo {
+            get {
+                return ResourceManager.GetString("gsNo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No AB Curve Created.
         /// </summary>
         public static string gsNoABCurveCreated {
@@ -3722,6 +3731,15 @@ namespace AgOpenGPS {
         public static string gsYaw_ {
             get {
                 return ResourceManager.GetString("gsYaw_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Yes.
+        /// </summary>
+        public static string gsYes {
+            get {
+                return ResourceManager.GetString("gsYes", resourceCulture);
             }
         }
         

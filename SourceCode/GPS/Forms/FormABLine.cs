@@ -38,7 +38,7 @@ namespace AgOpenGPS
             tboxHeading.Enabled = false;
             tboxABLineName.Text = "";
             tboxABLineName.Enabled = false;
-            
+
             //small window
             ShowFullPanel(true);
 
@@ -162,7 +162,7 @@ namespace AgOpenGPS
 
                 lvLines.Enabled = false;
                 btnAddToFile.Focus();
-                tboxABLineName.Text = (Math.Round(glm.toDegrees(mf.ABLine.abHeading), 1)).ToString(CultureInfo.InvariantCulture) 
+                tboxABLineName.Text = (Math.Round(glm.toDegrees(mf.ABLine.abHeading), 1)).ToString(CultureInfo.InvariantCulture)
                     + "\u00B0" +
                     mf.FindDirection(mf.ABLine.abHeading) + DateTime.Now.ToString("hh:mm:ss", CultureInfo.InvariantCulture);
             }
@@ -536,7 +536,7 @@ namespace AgOpenGPS
                 btnAddToFile.Visible = true;
                 btnAddAndGo.Visible = true;
 
-                btnAPoint.Visible = false ;
+                btnAPoint.Visible = false;
                 btnBPoint.Visible = false;
                 btnUpABHeadingBy1.Visible = false;
                 btnDnABHeadingBy1.Visible = false;

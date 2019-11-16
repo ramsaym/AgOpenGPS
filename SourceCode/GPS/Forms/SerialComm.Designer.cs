@@ -243,6 +243,8 @@ namespace AgOpenGPS
                     int feedback = buffer[0] + 256 * buffer[1];
 
                     actualSteerAngleDisp = feedback - 2047;
+                    //andreas ortner changed this one
+                    //actualSteerAngleDisp -= (Properties.Settings.Default.setAS_steerAngleOffset - 127) * 5;
                     actualSteerAngleDisp += (Properties.Settings.Default.setAS_steerAngleOffset - 127) * 5;
                     actualSteerAngleDisp /= Properties.Settings.Default.setAS_countsPerDegree;
                     actualSteerAngleDisp *= 100;                               

@@ -156,6 +156,8 @@ namespace AgOpenGPS
                             writer.WriteLine(curve.curveArr[i].Name);
 
                             //write out the aveheading
+                            //writer.WriteLine(curve.curveArr[i].spiralmode.ToString(CultureInfo.InvariantCulture));
+                            //writer.WriteLine(curve.curveArr[i].circlemode.ToString(CultureInfo.InvariantCulture));
                             writer.WriteLine(curve.curveArr[i].aveHeading.ToString(CultureInfo.InvariantCulture));
 
                             //write out the points of ref line
@@ -240,6 +242,24 @@ namespace AgOpenGPS
                             curve.curveArr[curve.numCurveLines].Name = reader.ReadLine();
                             // get the average heading
                             line = reader.ReadLine();
+                            if (line == "True" || line == "False")
+                            {
+                                curve.curveArr[curve.numCurveLines].spiralmode = bool.Parse(line);
+                                line = reader.ReadLine();
+                            }
+                            else
+                            {
+                                curve.curveArr[curve.numCurveLines].spiralmode = false;
+                            }
+                            if (line == "True" || line == "False")
+                            {
+                                curve.curveArr[curve.numCurveLines].circlemode = bool.Parse(line);
+                                line = reader.ReadLine();
+                            }
+                            else
+                            {
+                                curve.curveArr[curve.numCurveLines].circlemode = false;
+                            }
                             curve.curveArr[curve.numCurveLines].aveHeading = double.Parse(line, CultureInfo.InvariantCulture);
 
                             line = reader.ReadLine();
@@ -1476,19 +1496,22 @@ namespace AgOpenGPS
                                 bnd.bndArr[k].isDriveAround = bool.Parse(line);
                                 line = reader.ReadLine(); //number of points
                             }
-
                             //Check for latest boundary files, then above line string is num of points
-                            //bool turnheading = false;
-                            //if (line == "True" || line == "False")
-                            //{
-                            //    bnd.bndArr[k].isOwnField = bool.Parse(line);
-                            //    line = reader.ReadLine(); //number of points
-                            //}
-                            //else if (k == 0)
-                            //{
-                            //    turnheading = true;
-                            //    bnd.bndArr[k].isOwnField = true;
-                            //}
+                            bool turnheading = false;
+
+                            if (line == "True" || line == "False")
+                            {
+                                bnd.bndArr[k].isOwnField = bool.Parse(line);
+                                line = reader.ReadLine(); //number of points
+
+                                bnd.bndArr[k].OuterField = int.Parse(line);
+                                line = reader.ReadLine(); //number of points
+                            }
+                            else if (k == 0)
+                            {
+                                //turnheading = true;
+                                bnd.bndArr[k].isOwnField = true;
+                            }
 
                             int numPoints = int.Parse(line);
 
@@ -1504,10 +1527,10 @@ namespace AgOpenGPS
                                     double.Parse(words[1], CultureInfo.InvariantCulture),
                                     double.Parse(words[2], CultureInfo.InvariantCulture));
 
-                                    //if (turnheading)
-                                    //{
-                                    //    vecPt.heading = vecPt.heading + Math.PI;
-                                    //}
+                                    if (turnheading)
+                                    {
+                                        vecPt.heading = vecPt.heading + Math.PI;
+                                    }
                                     bnd.bndArr[k].bndLine.Add(vecPt);
                                 }
 
@@ -1873,7 +1896,8 @@ namespace AgOpenGPS
                 {
                     writer.WriteLine(bnd.bndArr[i].isDriveThru);
                     writer.WriteLine(bnd.bndArr[i].isDriveAround);
-                    //writer.WriteLine(bnd.bndArr[i].isOwnField);
+                    writer.WriteLine(bnd.bndArr[i].isOwnField);
+                    writer.WriteLine(bnd.bndArr[i].OuterField);
 
                     writer.WriteLine(bnd.bndArr[i].bndLine.Count.ToString(CultureInfo.InvariantCulture));
                     if (bnd.bndArr[i].bndLine.Count > 0)

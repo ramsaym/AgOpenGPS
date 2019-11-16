@@ -11,9 +11,9 @@ namespace AgOpenGPS
     {
         private readonly FormGPS mf = null;
 
-        private bool Selectedreset = true;
-        //private bool MultipleFieldLocked = true;
+        private bool MultipleFieldLocked = true;
         private int position = 0;
+        private int oldposition = 0;
         private bool scroll = false;
         private double viewableRatio = 0;
         private double contentHeight = 0;
@@ -32,48 +32,35 @@ namespace AgOpenGPS
             //winform initialization
             InitializeComponent();
 
-
-
             scrollmaxheight = button4.Size.Height;
             startscrollY = button4.Location.Y;
             startscrollX = button4.Location.X;
             rowheight = (int)tableLayoutPanel1.RowStyles[0].Height;
             items = (int)(tableLayoutPanel1.Height / rowheight + 0.5) - 1;
 
-
-            this.Text = gStr.gsStartDeleteABoundary;
-
-
             //Column Header
+            this.Text = gStr.gsStartDeleteABoundary;
             Boundary.Text = gStr.gsBounds;
             Thru.Text = gStr.gsDriveThru;
             Area.Text = gStr.gsArea;
             Around.Text = gStr.gsAround;
 
-
-
-
-            //Label
-            //Bounds.Text = gStr.gsSelectBoundary;
-
-
-            //Thru.Text = gStr.gsThru;
-            //Around.Text = gStr.gsLines;
-            //label6.Text = gStr.gsGo_Around;
-
-
-            //Bouton
+            //buttons
             btnDelete.Text = gStr.gsDelete;
             btnOuter.Text = gStr.gsCreate;
             btnSerialCancel.Text = gStr.gsSaveAndReturn;
-           // btnToggleDriveThru.Text = gStr.gsToggleDriveThru;         
-           // btnToggleDriveAround.Text = gStr.gsToggleDriveBy;
             btnLoadMultiBoundaryFromGE.Text = gStr.gsLoadMulti;
             btnDeleteAll.Text = gStr.gsDeleteAll;
             btnGo.Text = gStr.gsGo;
             btnLoadBoundaryFromGE.Text = gStr.gsLoadKML;
-            
 
+
+            //Bounds.Text = gStr.gsSelectBoundary;
+            //Thru.Text = gStr.gsThru;
+            //Around.Text = gStr.gsLines;
+            //label6.Text = gStr.gsGo_Around;
+            // btnToggleDriveThru.Text = gStr.gsToggleDriveThru;         
+            // btnToggleDriveAround.Text = gStr.gsToggleDriveBy;
         }
 
         void UpdateScroll(double pos)
@@ -109,14 +96,13 @@ namespace AgOpenGPS
             {
                 if (i < position && i < mf.bnd.bndArr.Count)
                 {
-                    //if (mf.bnd.bndArr[i].isOwnField)
-                    if (i==0)
+                    if (mf.bnd.bndArr[i].isOwnField)
                     {
-                        field += 1;
+                        //field += 1;
                     }
                     else
                     {
-                        inner += 1;
+                        //inner += 1;
                     }
                 }
                 else
@@ -136,44 +122,20 @@ namespace AgOpenGPS
                         a.FlatAppearance.BorderColor = BackColor;
                         a.FlatAppearance.MouseOverBackColor = BackColor;
                         a.FlatAppearance.MouseDownBackColor = BackColor;
-
-                        aa = a;
-
-                        //var c = new Button();
-                        //c.Margin = new Padding(0);
-                        //c.Size = new System.Drawing.Size(95, 40);
-                        //c.Name = string.Format("{0}", i - position);
-                        //c.TextAlign = ContentAlignment.MiddleCenter;
-                        //c.Click += OwnField_Click;
-
-                        var d = new Button
-                        {
-                            Margin = new Padding(0),
-                            Size = new System.Drawing.Size(80, 40),
-                            Name = string.Format("{0}", i - position),
-                            TextAlign = ContentAlignment.MiddleCenter
-                        };
-                        d.Click += DriveThru_Click;
-
-                        var e = new Button
-                        {
-                            Margin = new Padding(0),
-                            Size = new System.Drawing.Size(80, 40),
-                            Name = string.Format("{0}", i - position),
-                            TextAlign = ContentAlignment.MiddleCenter
-                        };
-                        e.Click += DriveAround_Click;
                         tableLayoutPanel1.Controls.Add(a, 0, i - position);
-                        //tableLayoutPanel1.Controls.Add(c, 2, i - position);
-                        tableLayoutPanel1.Controls.Add(d, 3-1, i - position);
-                        tableLayoutPanel1.Controls.Add(e, 4-1, i - position);
+                        aa = a;
                     }
 
-                    if (i < mf.bnd.bndArr.Count && mf.bnd.bndArr[i].isSet)
+
+                    if (i < mf.bnd.bndArr.Count)
                     {
                         tableLayoutPanel1.SetColumnSpan(aa, 1);
 
                         Control bb = tableLayoutPanel1.GetControlFromPosition(1, i - position);
+                        Control cc = tableLayoutPanel1.GetControlFromPosition(2, i - position);
+                        Control dd = tableLayoutPanel1.GetControlFromPosition(3, i - position);
+                        Control ee = tableLayoutPanel1.GetControlFromPosition(4, i - position);
+
                         if (bb == null)
                         {
                             var b = new Button
@@ -190,47 +152,51 @@ namespace AgOpenGPS
                             b.FlatAppearance.MouseDownBackColor = BackColor;
                             tableLayoutPanel1.Controls.Add(b, 1, i - position);
                             bb = b;
+
+                            var c = new Button();
+                            c.Margin = new Padding(0);
+                            c.Size = new System.Drawing.Size(95, 40);
+                            c.Name = string.Format("{0}", i - position);
+                            c.TextAlign = ContentAlignment.MiddleCenter;
+                            c.Click += OwnField_Click;
+                            tableLayoutPanel1.Controls.Add(c, 2, i - position);
+                            cc = c;
+
+                            var d = new Button
+                            {
+                                Margin = new Padding(0),
+                                Size = new System.Drawing.Size(160, 40),
+                                Name = string.Format("{0}", i - position),
+                                TextAlign = ContentAlignment.MiddleCenter
+                            };
+                            d.Click += DriveThru_Click;
+                            tableLayoutPanel1.Controls.Add(d, 3, i - position);
+                            dd = d;
+
+                            if (ee == null)
+                            {
+                                var e = new Button
+                                {
+                                    Margin = new Padding(0),
+                                    Size = new System.Drawing.Size(80, 40),
+                                    Name = string.Format("{0}", i - position),
+                                    TextAlign = ContentAlignment.MiddleCenter
+                                };
+                                e.Click += DriveAround_Click;
+                                tableLayoutPanel1.Controls.Add(e, 4, i - position);
+                                ee = e;
+                            }
                         }
-                        //Control cc = tableLayoutPanel1.GetControlFromPosition(2, i - position);
-                        //cc.Visible = true;
-                        Control dd = tableLayoutPanel1.GetControlFromPosition(3-1, i - position);
-                        dd.Visible = true;
-                        Control ee = tableLayoutPanel1.GetControlFromPosition(4-1, i - position);
-                        ee.Visible = true;
 
-                        Font backupfont = new Font(aa.Font.FontFamily, 18F, FontStyle.Bold);
-
-                        // LOCK MultipleField
-                        //if (MultipleFieldLocked)
-                        //{
-                        //    cc.Enabled = false;
-                        //}
-                        //else
-                        //{
-                        //    cc.Enabled = true;
-                        //}
-                        // LOCK MultipleField
-
-                        //if (mf.bnd.bndArr[i].isOwnField)
-                        if (i == 0)
+                        if (mf.bnd.boundarySelected >= 0 && i == mf.bnd.boundarySelected)
                         {
-                            //cc.Text = "Field";
-                            aa.Text = string.Format(gStr.gsOuter + " {0}", field);
-                            field += 1;
-                            aa.Font = backupfont;
-                            dd.Enabled = false;
-                            ee.Enabled = false;
-                            mf.bnd.bndArr[i].isDriveThru = false;
-                            mf.bnd.bndArr[i].isDriveAround = false;
+                            aa.ForeColor = Color.Red;
+                            bb.ForeColor = Color.Red;
                         }
                         else
                         {
-                            //cc.Text = "Inner";
-                            aa.Text = string.Format(gStr.gsInner + " {0}", inner);
-                            aa.Font = backupfont;
-                            inner += 1;
-                            dd.Enabled = true;
-                            ee.Enabled = true;
+                            aa.ForeColor = default;
+                            bb.ForeColor = default;
                         }
 
                         if (mf.isMetric)
@@ -242,56 +208,57 @@ namespace AgOpenGPS
                             bb.Text = Math.Round(mf.bnd.bndArr[i].area * 0.000247105, 2) + " Ac";
                         }
 
-                        dd.Text = mf.bnd.bndArr[i].isDriveThru ? "Yes" : "No";
-                        ee.Text = mf.bnd.bndArr[i].isDriveAround ? "Yes" : "No";
-
-                        if (Selectedreset == false && i == mf.bnd.boundarySelected)
+                        if (mf.bnd.bndArr[i].isOwnField)
                         {
-                            aa.ForeColor = Color.Red;
-                            bb.ForeColor = Color.Red;
+                            tableLayoutPanel1.SetColumnSpan(dd, 2);
+
+
+                            cc.Text = "Field";
+                            aa.Text = string.Format("Bound {0}", i + 1);
+                            //aa.Text = string.Format(gStr.gsOuter + " {0}", field);
+                            //field += 1;
+                            mf.bnd.bndArr[i].isDriveThru = false;
+                            mf.bnd.bndArr[i].isDriveAround = false;
+                            dd.Text = "Select!!!";
+
+
+                            if (mf.bnd.boundarySelected >= 0 && mf.bnd.boundarySelected < mf.bnd.bndArr.Count && !mf.bnd.bndArr[mf.bnd.boundarySelected].isOwnField) dd.Enabled = true;
+                            else dd.Enabled = false;
                         }
                         else
                         {
-                            aa.ForeColor = default;
-                            bb.ForeColor = default;
+                            tableLayoutPanel1.SetColumnSpan(dd, 1);
+                            aa.Text = string.Format("Bound {0}", i + 1);
+                            //aa.Text = string.Format(gStr.gsInner + " {0}", inner);
+                            //inner += 1;
+                            cc.Text = "Inner";
+                            cc.Text = (mf.bnd.bndArr[i].OuterField+1).ToString();
+                            dd.Enabled = true;
+                            ee.Visible = true;
+                            dd.Text = mf.bnd.bndArr[i].isDriveThru ? gStr.gsYes : gStr.gsNo;
+                            ee.Text = mf.bnd.bndArr[i].isDriveAround ? gStr.gsYes : gStr.gsNo;
                         }
                     }
                     else
                     {
-                        Control bb = tableLayoutPanel1.GetControlFromPosition(1, i - position);
-                        if (!(bb == null || bb == aa))
-                        {
-                            bb.Dispose();
-                        }
-
                         tableLayoutPanel1.SetColumnSpan(aa, 2);
-                        aa.Text = string.Format("1. Create Boundary", i - position + 1);
-
-
-                        //Control cc = tableLayoutPanel1.GetControlFromPosition(2, i - position);
-                        //cc.Visible = false;
-                        Control dd = tableLayoutPanel1.GetControlFromPosition(3-1, i - position);
-                        dd.Visible = false;
-                        Control ee = tableLayoutPanel1.GetControlFromPosition(4-1, i - position);
-                        ee.Visible = false;
-
-
-                        //delete rest of buttons
                         while (true)
                         {
-                            Control ff = tableLayoutPanel1.GetNextControl(ee, true);
-                            if (ff == null)
+                            Control ee = tableLayoutPanel1.GetNextControl(aa, true);
+                            if (ee == null)
                             {
                                 break;
                             }
                             else
                             {
-                                ff.Dispose();
+                                ee.Dispose();
                             }
-
                         }
 
-                        if (Selectedreset == false && i == mf.bnd.boundarySelected)
+
+                        aa.Text = string.Format("Create Boundary", i - position + 1);
+
+                        if (mf.bnd.boundarySelected >= 0 && i == mf.bnd.boundarySelected)
                         {
                             aa.ForeColor = Color.Red;
                         }
@@ -299,7 +266,7 @@ namespace AgOpenGPS
                         {
                             aa.ForeColor = default;
                         }
-                        break;
+                        //break;
                     }
                 }
             }
@@ -330,26 +297,31 @@ namespace AgOpenGPS
             UpdateChart();
         }
 
-
         void DriveThru_Click(object sender, EventArgs e)
         {
             if (sender is Button b)
             {
-                mf.bnd.bndArr[Convert.ToInt32(b.Name) + position].isDriveThru = !mf.bnd.bndArr[Convert.ToInt32(b.Name) + position].isDriveThru;
+                if (mf.bnd.bndArr[Convert.ToInt32(b.Name) + position].isOwnField)
+                {
+                    mf.bnd.bndArr[mf.bnd.boundarySelected].OuterField = Convert.ToInt32(b.Name) + position;
+
+                }
+                else mf.bnd.bndArr[Convert.ToInt32(b.Name) + position].isDriveThru = !mf.bnd.bndArr[Convert.ToInt32(b.Name) + position].isDriveThru;
                 UpdateChart();
             }
         }
 
-
         void OwnField_Click(object sender, EventArgs e)
         {
-            //if (sender is Button b)
-            //{
-            //    mf.bnd.bndArr[Convert.ToInt32(b.Name) + position].isOwnField = !mf.bnd.bndArr[Convert.ToInt32(b.Name) + position].isOwnField;
-            //    MultipleFieldLocked = true;
-            //    UpdateChart();
-            //}
+            if (sender is Button b)
+            {
+                mf.bnd.bndArr[Convert.ToInt32(b.Name) + position].isOwnField = !mf.bnd.bndArr[Convert.ToInt32(b.Name) + position].isOwnField;
+
+                mf.bnd.bndArr[Convert.ToInt32(b.Name) + position].OuterField = -1;
+                UpdateChart();
+            }
         }
+        
         void DriveAround_Click(object sender, EventArgs e)
         {
             if (sender is Button b)
@@ -366,9 +338,7 @@ namespace AgOpenGPS
 
                 mf.bnd.boundarySelected = Convert.ToInt32(b.Name) + position;
 
-                Selectedreset = false;
-
-                if (mf.bnd.bndArr.Count > mf.bnd.boundarySelected && mf.bnd.bndArr[mf.bnd.boundarySelected].isSet)
+                if (mf.bnd.bndArr.Count > mf.bnd.boundarySelected && mf.bnd.boundarySelected >= 0)
                 {
                     btnOuter.Enabled = false;
                     btnLoadBoundaryFromGE.Enabled = false;
@@ -377,7 +347,7 @@ namespace AgOpenGPS
                     btnLeftRight.Enabled = false;
 
                 }
-                else
+                else if (mf.bnd.boundarySelected > 0)
                 {
                     btnOuter.Enabled = true;
                     btnLoadBoundaryFromGE.Enabled = true;
@@ -385,6 +355,7 @@ namespace AgOpenGPS
                     btnDelete.Enabled = false;
                     btnLeftRight.Enabled = false;
                 }
+                else mf.bnd.boundarySelected = -1;
 
             }
             UpdateChart();
@@ -406,13 +377,15 @@ namespace AgOpenGPS
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
+
+
             btnLeftRight.Enabled = false;
             btnOuter.Enabled = false;
             btnLoadBoundaryFromGE.Enabled = false;
             btnGo.Enabled = false;
             btnDelete.Enabled = false;
 
-            if (mf.bnd.bndArr.Count > mf.bnd.boundarySelected)
+            if (mf.bnd.bndArr.Count > mf.bnd.boundarySelected && mf.bnd.boundarySelected >= 0)
             {
                 mf.bnd.bndArr.RemoveAt(mf.bnd.boundarySelected);
                 mf.turn.turnArr.RemoveAt(mf.bnd.boundarySelected);
@@ -421,8 +394,10 @@ namespace AgOpenGPS
 
             mf.FileSaveBoundary();
             mf.bnd.boundarySelected = -1;
-            Selectedreset = true;
+            if (position + items >= mf.bnd.bndArr.Count) position--;
+            if (position < 0) position = 0;
             UpdateChart();
+
             UpdateScroll(-1);
         }
 
@@ -455,7 +430,6 @@ namespace AgOpenGPS
             ResetAllBoundary();
 
             mf.bnd.boundarySelected = -1;
-            Selectedreset = true;
 
             mf.bnd.isOkToAddPoints = false;
             mf.turn.BuildTurnLines();
@@ -492,7 +466,6 @@ namespace AgOpenGPS
 
         void Mouse_Down(object sender, MouseEventArgs e)
         {
-
             oldY = MousePosition.Y;
             scroll = true;
         }
@@ -505,6 +478,12 @@ namespace AgOpenGPS
         void Mouse_Leave(object sender, EventArgs e)
         {
             scroll = false;
+        }
+
+        private void Field_Click(object sender, EventArgs e)
+        {
+            MultipleFieldLocked = !MultipleFieldLocked;
+            UpdateChart();
         }
 
         void Mouse_Move(object sender, MouseEventArgs e)
@@ -535,7 +514,11 @@ namespace AgOpenGPS
                         position = 0;
                         UpdateScroll(0);
                     }
-                    UpdateChart();
+                    if (position != oldposition)
+                    {
+                        oldposition = position;
+                        UpdateChart();
+                    }
                     oldY = MousePosition.Y;
                 }
             }
@@ -546,7 +529,6 @@ namespace AgOpenGPS
 
             if (sender is Button button)
             {
-                Selectedreset = true;
                 btnLeftRight.Enabled = false;
                 btnOuter.Enabled = false;
                 btnLoadBoundaryFromGE.Enabled = false;
@@ -653,8 +635,8 @@ namespace AgOpenGPS
                                     mf.bnd.bndArr[i].CalculateBoundaryArea();
                                     mf.bnd.bndArr[i].PreCalcBoundaryLines();
                                     mf.bnd.bndArr[i].isSet = true;
-                                    //if (i == 0) mf.bnd.bndArr[i].isOwnField = true;
-                                    //else mf.bnd.bndArr[i].isOwnField = false;
+                                    if (i == 0) mf.bnd.bndArr[i].isOwnField = true;
+                                    else mf.bnd.bndArr[i].isOwnField = false;
                                     coordinates = "";
                                     i++;
                                 }
