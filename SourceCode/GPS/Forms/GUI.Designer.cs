@@ -19,6 +19,11 @@ namespace AgOpenGPS
         private byte redSections, grnSections, bluSections;
         public byte redField, grnField, bluField;
         public byte flagColor = 0;
+        public List<vec2> driveList = new List<vec2>();
+        public List<List<vec2>> driveGroupList = new List<List<vec2>>();
+        public List<List<vec2>> autoGroupList = new List<List<vec2>>();
+        public List<List<vec2>> manualGroupList = new List<List<vec2>>();
+
 
         //how many cm off line per big pixel
         public int lightbarCmPerPixel;
@@ -29,6 +34,9 @@ namespace AgOpenGPS
         //Is it in 2D or 3D, metric or imperial, display lightbar, display grid etc
         public bool isIn3D = true, isMetric = true, isLightbarOn = true, isGridOn, isUTurnAlwaysOn, isCompassOn, isSpeedoOn, isSideGuideLines = true;
         public bool isPureDisplayOn = true, isSkyOn = true, isRollMeterOn = false, isBigAltitudeOn = false;
+        public double camZoomNow = -10;
+        public double camDistNow = -10;
+        public bool fieldZoom = false;
 
         //master Manual and Auto, 3 states possible
         public enum btnStates { Off, Auto, On }
@@ -923,7 +931,7 @@ namespace AgOpenGPS
         {
             //delete selected flag and set selected to none
             flagPts.RemoveAt(flagNumberPicked - 1);
-            flagNumberPicked = 0;
+
 
             // re-sort the id's based on how many flags left
             int flagCnt = flagPts.Count;
@@ -931,6 +939,11 @@ namespace AgOpenGPS
             {
                 for (int i = 0; i < flagCnt; i++) flagPts[i].ID = i + 1;
             }
+
+            FileRenuberFlagLog();
+
+
+            flagNumberPicked = 0;
         }
 
         private void DoNTRIPSecondRoutine()
@@ -1578,9 +1591,27 @@ namespace AgOpenGPS
                 case btnStates.Off:
                     manualBtnState = btnStates.On;
                     btnManualOffOn.Image = Properties.Resources.ManualOn;
+                    vec2 here1 = new vec2(pn.latitude, pn.longitude);
 
                     //if Auto is on, turn it off
-                    autoBtnState = btnStates.Off;
+                    if (autoBtnState != btnStates.Off)
+                    { 
+                       
+                        driveList.Add(here1);
+                       autoGroupList.Add(driveList);
+                        driveList = new List<vec2>();
+                        driveList.Add(here1);
+
+                    }
+                    else
+                    {
+                        driveList.Add(here1);
+                        driveGroupList.Add(driveList);
+                        driveList = new List<vec2>();
+                        driveList.Add(here1);
+
+                    }
+                        autoBtnState = btnStates.Off;
                     btnSectionOffAutoOn.Image = Properties.Resources.SectionMasterOff;
 
                     //turn all the sections allowed and update to ON!! Auto changes to ON
@@ -1591,6 +1622,8 @@ namespace AgOpenGPS
                     }
 
                     ManualAllBtnsUpdate();
+                    
+                    
                     break;
 
                 case btnStates.On:
@@ -1606,6 +1639,12 @@ namespace AgOpenGPS
 
                     //Update the button colors and text
                     ManualAllBtnsUpdate();
+                    vec2 here = new vec2(pn.latitude, pn.longitude);
+                    driveList.Add(here);
+                    manualGroupList.Add(driveList);
+                    driveList = new List<vec2>();
+                    driveList.Add(here);
+
                     break;
             }
         }
@@ -1619,8 +1658,28 @@ namespace AgOpenGPS
 
                     autoBtnState = btnStates.Auto;
                     btnSectionOffAutoOn.Image = Properties.Resources.SectionMasterOn;
+                    vec2 here1 = new vec2(pn.latitude, pn.longitude);
 
                     //turn off manual if on
+                    if (manualBtnState != btnStates.Off)
+                    {
+
+                        driveList.Add(here1);
+                        manualGroupList.Add(driveList);
+                        driveList = new List<vec2>();
+                        driveList.Add(here1);
+
+                    }
+                    else
+                    {
+                        driveList.Add(here1);
+                        driveGroupList.Add(driveList);
+                        driveList = new List<vec2>();
+                        driveList.Add(here1);
+
+                    }
+
+
                     manualBtnState = btnStates.Off;
                     btnManualOffOn.Image = Properties.Resources.ManualOff;
 
@@ -1632,6 +1691,7 @@ namespace AgOpenGPS
                     }
 
                     ManualAllBtnsUpdate();
+                    
                     break;
 
                 case btnStates.Auto:
@@ -1648,6 +1708,13 @@ namespace AgOpenGPS
 
                     //Update the button colors and text
                     ManualAllBtnsUpdate();
+                    here1 = new vec2(pn.latitude, pn.longitude);
+                    driveList.Add(here1);
+                    autoGroupList.Add(driveList);
+                    driveList = new List<vec2>();
+                    driveList.Add(here1);
+
+
                     break;
             }
         }
@@ -1972,7 +2039,7 @@ namespace AgOpenGPS
         private void btnFlag_Click(object sender, EventArgs e)
         {
             int nextflag = flagPts.Count + 1;
-            CFlag flagPt = new CFlag(pn.latitude, pn.longitude, pn.fix.easting, pn.fix.northing, flagColor, nextflag);
+            CFlag flagPt = new CFlag(pn.latitude, pn.longitude, pn.fix.easting, pn.fix.northing, flagColor, nextflag,"");
             flagPts.Add(flagPt);
             FileSaveFlags();
         }
@@ -2507,10 +2574,27 @@ namespace AgOpenGPS
 
         private void ZoomExtentsStripBtn_Click(object sender, EventArgs e)
         {
-            if (camera.camSetDistance < -400) camera.camSetDistance = -75;
-            else camera.camSetDistance = -3 * maxFieldDistance;
-            if (camera.camSetDistance == 0) camera.camSetDistance = -2000;
-            SetZoom();
+            if (!isJobStarted)
+            {
+                TimedMessageBox(1000, "No Field Open", "Please Start a Field");
+                return;
+            }
+            if (fieldZoom)
+            {
+                fieldZoom = false;
+                camera.camFollowing = true;
+                camera.zoomValue = camZoomNow;
+                camera.camSetDistance = camDistNow;
+
+            }
+            else
+            {
+                fieldZoom = true;
+                camera.camFollowing = false;
+                camZoomNow = camera.zoomValue;
+                camDistNow = camera.camSetDistance;
+
+            }
         }
 
         private void FontToolBtn_Click(object sender, EventArgs e)
@@ -2914,6 +2998,7 @@ namespace AgOpenGPS
         {
             //delete selected flag and set selected to none
             DeleteSelectedFlag();
+            FileSaveFlags();
         }
         private void contextMenuStripOpenGL_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -2925,7 +3010,7 @@ namespace AgOpenGPS
             if (isJobStarted)
             {
                 //save new copy of kml with selected flag and view in GoogleEarth
-                FileSaveSingleFlagKML(flagNumberPicked);
+                FileSaveSingleFlagKML(flagNumberPicked,flagPts[flagNumberPicked-1].flgtxt);
 
                 //Process.Start(@"C:\Program Files (x86)\Google\Google Earth\client\googleearth", workingDirectory + currentFieldDirectory + "\\Flags.KML");
                 Process.Start(fieldsDirectory + currentFieldDirectory + "\\Flag.KML");
@@ -3505,7 +3590,16 @@ namespace AgOpenGPS
                         steerAnglesToolStripDropDownButton1.Text = SetSteerAngle + "\r\n" + ActualSteerAngle;
                     }
                     lblHz.Text = NMEAHz + "Hz " + (int)(frameTime) + "\r\n" + FixQuality + HzTime.ToString("N1") + " Hz";
+                    if (flagNumberPicked != 0)
+                    {
+                        panelFlag.Visible = true;
 
+
+                    }
+                    else
+                    {
+                        panelFlag.Visible = false;
+                    }
                 }
 
             } //there was a new GPS update

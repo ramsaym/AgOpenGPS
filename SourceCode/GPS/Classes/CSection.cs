@@ -16,6 +16,7 @@ namespace AgOpenGPS
 
         //list of patch data individual triangles
         public List<vec2> triangleList = new List<vec2>();
+        
 
         //list of the list of patch data individual triangles for that entire section activity
         public List<List<vec2>> patchList = new List<List<vec2>>();
@@ -54,6 +55,7 @@ namespace AgOpenGPS
         public vec2 leftPoint;
 
         public vec2 rightPoint;
+        public vec2 there;
 
         //used to determine left and right point
         public vec2 lastLeftPoint;
@@ -90,12 +92,15 @@ namespace AgOpenGPS
                 //starting a new patch chunk so create a new triangle list
                 //and add the previous triangle list to the list of paths
                 triangleList = new List<vec2>();
+                
                 patchList.Add(triangleList);
+                
 
                 //left side of triangle
 #pragma warning disable CS1690 // Accessing a member on a field of a marshal-by-reference class may cause a runtime exception
                 vec2 point = new vec2((mf.cosSectionHeading * positionLeft) + mf.toolPos.easting,
                         (mf.sinSectionHeading * positionLeft) + mf.toolPos.northing);
+               
                 triangleList.Add(point);
 
                 //Right side of triangle
@@ -116,6 +121,8 @@ namespace AgOpenGPS
 
             //save the triangle list in a patch list to add to saving file
             mf.patchSaveList.Add(triangleList);
+            
+
         }
 
         //every time a new fix, a new patch point from last point to this point
@@ -130,6 +137,9 @@ namespace AgOpenGPS
 
             //add the point to List
             triangleList.Add(point);
+            
+            
+
 
             //Right side
             vec2 point2 = new vec2((cosHeading * positionRight) + easting,
@@ -169,7 +179,7 @@ namespace AgOpenGPS
                 }
             }
 
-            if (numTriangles > 36)
+            if (numTriangles > 2000000)
             {
                 numTriangles = 0;
 

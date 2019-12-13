@@ -123,6 +123,7 @@ namespace AgOpenGPS
 
         //list of the list of patch data individual triangles for field sections
         public List<List<vec2>> patchSaveList = new List<List<vec2>>();
+        
 
         //list of the list of patch data individual triangles for contour tracking
         public List<List<vec3>> contourSaveList = new List<List<vec3>>();
@@ -1404,12 +1405,14 @@ namespace AgOpenGPS
                             double east;
                             double nort;
                             int color, ID;
+                            string flgtxty;
 
                             for (int v = 0; v < points; v++)
                             {
 
                                 line = reader.ReadLine();
                                 string[] words = line.Split(',');
+                                int ct = words.Length;
 
                                 lat = double.Parse(words[0], CultureInfo.InvariantCulture);
                                 longi = double.Parse(words[1], CultureInfo.InvariantCulture);
@@ -1417,9 +1420,20 @@ namespace AgOpenGPS
                                 nort = double.Parse(words[3], CultureInfo.InvariantCulture);
                                 color = int.Parse(words[4]);
                                 ID = int.Parse(words[5]);
+                                if (ct == 7)
+                                {
+                                    flgtxty = words[6];
+                                    CFlag flagPt = new CFlag(lat, longi, east, nort, color, ID, flgtxty);
+                                    flagPts.Add(flagPt);
+                                }
+                                else
+                                {
+                                    CFlag flagPt = new CFlag(lat, longi, east, nort, color, ID,"");
+                                    flagPts.Add(flagPt);
+                                }                             
 
-                                CFlag flagPt = new CFlag(lat, longi, east, nort, color, ID);
-                                flagPts.Add(flagPt);
+                                
+                               
                             }
 
                         }
@@ -2007,8 +2021,9 @@ namespace AgOpenGPS
                             flagPts[i].easting.ToString(CultureInfo.InvariantCulture) + "," +
                             flagPts[i].northing.ToString(CultureInfo.InvariantCulture) + "," +
                             flagPts[i].color.ToString(CultureInfo.InvariantCulture) + "," +
-                            flagPts[i].ID.ToString(CultureInfo.InvariantCulture));
-                    }
+                            flagPts[i].ID.ToString(CultureInfo.InvariantCulture) + "," +
+                            flagPts[i].flgtxt.ToString(CultureInfo.InvariantCulture) );
+                }
                 }
 
                 catch (Exception e)
@@ -2161,7 +2176,7 @@ namespace AgOpenGPS
                         writer.WriteLine(@"<color>ff44ffff</color>");
 
                     writer.WriteLine(@"</IconStyle> </Style>");
-                    writer.WriteLine(@" <name> " + (i+1) + @"</name>");
+                    writer.WriteLine(@" <name> " + (i+1)+ " " + flagPts[i].flgtxt + @"</name>");
                     writer.WriteLine(@"<Point><coordinates> " +
                                     flagPts[i].longitude.ToString(CultureInfo.InvariantCulture) + "," + flagPts[i].latitude.ToString(CultureInfo.InvariantCulture) + ",0" +
                                     @"</coordinates> </Point> ");
@@ -2178,9 +2193,139 @@ namespace AgOpenGPS
             }
 
         }
+        public void FileSaveBndryKML()
+        {
+
+            //get the directory and make sure it exists, create if not
+            string dirField = fieldsDirectory + currentFieldDirectory + "\\";
+
+            string directoryName = Path.GetDirectoryName(dirField);
+            if ((directoryName.Length > 0) && (!Directory.Exists(directoryName)))
+            { Directory.CreateDirectory(directoryName); }
+
+            string myFileName;
+            myFileName = "BND.kml";
+            driveGroupList.Add(driveList);
+            
+
+            using (StreamWriter writer = new StreamWriter(dirField + myFileName))
+            {
+
+                writer.WriteLine(@"<?xml version=""1.0"" encoding=""UTF-8""?>     ");
+                writer.WriteLine(@"<kml xmlns=""http://www.opengis.net/kml/2.2""> ");
+
+                int count1 = driveGroupList.Count;
+                int count2 = autoGroupList.Count;
+                int count3 = manualGroupList.Count;
+
+
+                writer.WriteLine(@"<Document>");
+                writer.WriteLine(@"  <name> AOG File </name>");
+
+                //Style for Just driving around blue
+                writer.WriteLine(@"<Style id = ""DriveStyle"">");
+
+                writer.WriteLine(@"<LineStyle>");
+
+                writer.WriteLine(@"<color> ffff0000 </color>");
+
+                writer.WriteLine(@"<width> 2 </width>");
+
+                writer.WriteLine(@" </LineStyle>");
+
+                writer.WriteLine(@"</Style>");
+
+                //Style for auto tool green
+                writer.WriteLine(@"<Style id = ""AutoStyle"">");
+
+                writer.WriteLine(@"<LineStyle>");
+
+                writer.WriteLine(@"<color> ff00ff00 </color>");
+
+                writer.WriteLine(@"<width> 5 </width>");
+
+                writer.WriteLine(@" </LineStyle>");
+
+                writer.WriteLine(@"</Style>");
+
+                //Style for Manual yellow
+                writer.WriteLine(@"<Style id = ""ManualStyle"">");
+
+                writer.WriteLine(@"<LineStyle>");
+
+                writer.WriteLine(@"<color> ff00ffff </color>");
+
+                writer.WriteLine(@"<width> 5 </width>");
+
+                writer.WriteLine(@" </LineStyle>");
+
+                writer.WriteLine(@"</Style>");
+
+                foreach (var driveList in driveGroupList)
+                {
+
+                    writer.WriteLine(@"  <Placemark>");
+                    writer.WriteLine(@"<name> Driving </name>");
+                    writer.WriteLine(@"<styleUrl >#DriveStyle</styleUrl>");
+                    writer.WriteLine(@"<LineString>");
+                    writer.WriteLine(@"<tessellate> 1 </tessellate>");
+                    writer.WriteLine(@" <coordinates>");
+                    int count4 = driveList.Count;
+
+                    for (int i = 0; i < count4; i++)
+                    {
+                        writer.WriteLine(@driveList[i].northing + "," + driveList[i].easting + ",0");
+                    }
+                    writer.WriteLine(@"</coordinates>");
+                    writer.WriteLine(@"</LineString>");
+                    writer.WriteLine(@"  </Placemark>");
+                }
+                foreach (var driveList in autoGroupList)
+                {
+
+                    writer.WriteLine(@"  <Placemark>");
+                    writer.WriteLine(@"<name> Auto Tool </name>");
+                    writer.WriteLine(@"<styleUrl >#AutoStyle</styleUrl>");
+                    writer.WriteLine(@"<LineString>");
+                    writer.WriteLine(@"<tessellate> 1 </tessellate>");
+                    writer.WriteLine(@" <coordinates>");
+                    int count5 = driveList.Count;
+
+                    for (int i = 0; i < count5; i++)
+                    {
+                        writer.WriteLine(@driveList[i].northing + "," + driveList[i].easting + ",0");
+                    }
+                    writer.WriteLine(@"</coordinates>");
+                    writer.WriteLine(@"</LineString>");
+                    writer.WriteLine(@"  </Placemark>");
+                }
+                foreach (var driveList in manualGroupList)
+                {
+
+                    writer.WriteLine(@"  <Placemark>");
+                    writer.WriteLine(@"<name> Manual Tool </name>");
+                    writer.WriteLine(@"<styleUrl >#ManualStyle</styleUrl>");
+                    writer.WriteLine(@"<LineString>");
+                    writer.WriteLine(@"<tessellate> 1 </tessellate>");
+                    writer.WriteLine(@" <coordinates>");
+                    int count6 = driveList.Count;
+
+                    for (int i = 0; i < count6; i++)
+                    {
+                        writer.WriteLine(@driveList[i].northing + "," + driveList[i].easting + ",0");
+                    }
+                    writer.WriteLine(@"</coordinates>");
+                    writer.WriteLine(@"</LineString>");
+                    writer.WriteLine(@"  </Placemark>");
+                }
+                writer.WriteLine(@"</Document>");
+                writer.WriteLine(@"</kml>                                         ");
+            }
+
+        }
 
         //generate KML file from flag
-        public void FileSaveSingleFlagKML(int flagNumber)
+        public void FileSaveSingleFlagKML(int flagNumber,string flgtext)
         {
 
             //get the directory and make sure it exists, create if not
@@ -2212,7 +2357,7 @@ namespace AgOpenGPS
                     if (flagPts[flagNumber - 1].color == 2)  //yel - xbgr
                         writer.WriteLine(@"<color>ff44ffff</color>");
                     writer.WriteLine(@"</IconStyle> </Style>");
-                    writer.WriteLine(@" <name> " + flagNumber.ToString(CultureInfo.InvariantCulture) + @"</name>");
+                    writer.WriteLine(@" <name> " + flagNumber.ToString(CultureInfo.InvariantCulture) + " " + flgtext + @"</name>");
                     writer.WriteLine(@"<Point><coordinates> " +
                                     flagPts[flagNumber-1].longitude.ToString(CultureInfo.InvariantCulture) + "," + flagPts[flagNumber-1].latitude.ToString(CultureInfo.InvariantCulture) + ",0" +
                                     @"</coordinates> </Point> ");
