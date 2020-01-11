@@ -5,7 +5,7 @@
   #define GPS_Refresh 10                 // Enter the Hz refresh rate, example 5 or 10 or 8 with ublox
                                          // Best is leave it at 10
                                         
-  #define Motor_Valve_Driver_Board 2    // 1 =  Steering Motor/valves + Cytron MD30C, MD13A Driver
+  #define Motor_Valve_Driver_Board 1    // 1 =  Steering Motor/valves + Cytron MD30C, MD13A Driver
                                         // 2 =  Steering Motor/valves + IBT 2  Driver
                                 
   #define A2D_Convertor_Mode 1          // 0 = No ADS, connect Wheel Angle Sensor (WAS) to Arduino A0
@@ -15,17 +15,17 @@
                                         // 2 = ADS1115 Differential Mode - Connect Sensor GND to A1, Signal to A0
                                             // These sensors are factory installed and powered by tractor oem wiring.
                                  
-  #define WAS_Invert 1                  // set to 1 to Change Direction of Wheel Angle Sensor, must be positive turning right 
+  #define WAS_Invert 0                  // set to 1 to Change Direction of Wheel Angle Sensor, must be positive turning right 
   
   #define Motor_Direction_Invert 0      // 1 = reverse output direction (Valve & Motor) 0 = Normal
 
-  #define SwitchOrButton 1              // set to 0 to use steer switch as switch
+  #define SwitchOrButton 0              // set to 0 to use steer switch as switch
                                         // set to 1 to use steer switch as button
                                         // Button/switch pulls pin low to activate
  
   #define BNO_Installed 0               // set to 1 to enable BNO055 IMU, otherwise set to 0 for none
   
-  #define Inclinometer_Installed 2      // set to 0 for none
+  #define Inclinometer_Installed 0      // set to 0 for none
                                         // set to 1 if DOGS2 Inclinometer is installed and connected to ADS pin A2
                                         // set to 2 if MMA8452 installed GY-45 (1C)
                                         // set to 3 if MMA8452 installed Sparkfun, Adafruit MMA8451 (1D)
@@ -43,13 +43,13 @@
                           // set to 1 for Section Relays
                           // set to 2 for uTurn Relays
   
-  #define EtherNet 1      // 0 = Serial/USB communcation with AOG
+  #define EtherNet 0      // 0 = Serial/USB communcation with AOG
                           // 1 = Ethernet comunication with AOG (using a ENC28J60 chip)
                           
   #define CS_Pin 10       // Arduino Nano = 10 depending how CS of Ethernet Controller ENC28J60 is Connected
 
-  #define   MaxSpeed  10     // km/h  above -> steering off
-  #define   MinSpeed  .25      // km/h  below -> sterring off (minimum = 0.25)
+  #define   MaxSpeed  20     // km/h  above -> steering off
+  #define   MinSpeed  1      // km/h  below -> sterring off (minimum = 0.25)
 
 
   //##########################################################################################################
@@ -90,9 +90,9 @@
     byte toSend[] = {0,0,0,0,0,0,0,0,0,0};
   
     // ethernet interface ip address
-    static byte myip[] = { 192,168,0,77 };
+    static byte myip[] = { 192,168,1,77 };
     // gateway ip address
-    static byte gwip[] = { 192,168,0,1 };
+    static byte gwip[] = { 192,168,1,1 };
     //DNS- you just need one anyway
     static byte myDNS[] = { 8,8,8,8 };
     //mask
@@ -101,7 +101,7 @@
     unsigned int portMy = 5577; 
   
     //sending back to where and which port
-    static byte ipDestination[] = {192, 168, 0, 255};
+    static byte ipDestination[] = {192, 168, 1, 255};
     unsigned int portDestination = 9999; //AOG port that listens
     
     // ethernet mac address - must be unique on your network
@@ -113,7 +113,7 @@
   #if A2D_Convertor_Mode==1 | A2D_Convertor_Mode == 2
     #include "ADS1015.h"
     Adafruit_ADS1115 ads;     // Use this for the 16-bit version ADS1115
-      #define SteerPosZero 1480 //@MR_edit jan 11 2020. orig: 1660 which is half of 3320 or 0-5v. Lower if voltage is dropping off
+      #define SteerPosZero 1660 
   #else
     #define SteerPosZero 512
   #endif
@@ -189,7 +189,7 @@
   float steerAngleError = 0; //setpoint - actual
   float distanceError = 0; //
   int steerZero = 0;
-  float steeringPositionZero = SteerPosZero; //@MR_edit was 1660 hardocoded, same as SteerPosZero so remapped for debugging 
+  float steeringPositionZero = 1660;
   float steerSensorCounts = 23;
 
     //pwm variables
